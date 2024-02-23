@@ -1,0 +1,70 @@
+[
+    {
+        "question": "example-question",
+        "options": [
+            {
+                "text": "option-1",
+                "correct": true
+            },
+            {
+                "text": "option-2",
+                "correct": false
+            },
+            {
+                "text": "option-3",
+                "correct": false
+            }
+        ]
+    },
+    {
+        "question": "Which of the following is a programming language?",
+        "options": [
+            {
+                "text": "Python",
+                "correct": true
+            },
+            {
+                "text": "Rattlesnake",
+                "correct": false
+            },
+            {
+                "text": "Boa constrictor",
+                "correct": false
+            }
+        ]
+    },
+    {
+        "question": "Who wrote the novel 'Do Androids Dream of Electric Sheep'?",
+        "options": [
+            {
+                "text": "Philip K. Dick",
+                "correct": true
+            },
+            {
+                "text": "George Orwell",
+                "correct": false
+            },
+            {
+                "text": "Aldous Huxley",
+                "correct": false
+            }
+        ]
+    },
+    {
+        "question": "Who painted 'The Persistence of Memory'?",
+        "options": [
+            {
+                "text": "Pablo Picasso",
+                "correct": false
+            },
+            {
+                "text": "Salvador Dali",
+                "correct": true
+            },
+            {
+                "text": "Edvard Munch",
+                "correct": false
+            }
+        ]
+    }
+]
