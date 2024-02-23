@@ -16,20 +16,15 @@ def generate_questions(subject: str, question_count: int, option_count: int):
         quiz_sample = json.dumps(json.load(file))
 
     prompt = (f"Given the subject below, generate a series of {question_count} quiz questions on the subject."
-              f"Each question should have {option_count} options, of which exactly 1 option is correct and the rest are incorrect."
+              f"Each question should have {option_count} options, of which only 1 option is correct and the rest are incorrect."
               f"Format your response as a JSON list as per the following example:\n"
               f"{quiz_sample}"
               f"\nThe subject is as follows: {subject}")
 
-    try:
-        response = model.generate_content(prompt)
-        response_text = response.text
-        questions = json.loads(response_text)
-        return questions
-
-    except Exception as err:
-        print("Error generating response from Gemini:", err)
-        return
+    response = model.generate_content(prompt)
+    response_text = response.text
+    questions = json.loads(response_text)
+    return questions
 
 
 if __name__ == '__main__':
