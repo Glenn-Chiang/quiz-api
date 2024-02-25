@@ -10,10 +10,6 @@ def error_response(status_code: int, message: str = None):
     return payload, status_code
 
 
-def bad_request(message: str):
-    return error_response(status_code=400, message=message)
-
-
 @app.errorhandler(HTTPException)
 def handle_exception(error: HTTPException):
     return error_response(error.code, message=error.description)
