@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, request
 from app import app, db
 from app.models import User
 
@@ -12,3 +12,7 @@ def get_users():
 @app.get('/users/<int:user_id>')
 def get_user(user_id):
     return User.query.get_or_404(ident=user_id)
+
+@app.post('/users')
+def create_user():
+    pass

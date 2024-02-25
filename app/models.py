@@ -15,7 +15,7 @@ class User(db.Model):
         'QuizAttempt', back_populates='user')
 
     def __repr__(self) -> str:
-        return f'User <{self.id}>'
+        return f'User <{self.username}>'
     
 
 class Quiz(db.Model):
