@@ -1,6 +1,6 @@
 from app import db
 from datetime import datetime, timezone
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, select, func
 from sqlalchemy.orm import mapped_column, Mapped, WriteOnlyMapped, relationship
 
 
@@ -35,11 +35,14 @@ class Quiz(db.Model):
     creator: Mapped[User] = relationship(
         'User', back_populates='created_quizzes')
 
-    questions: WriteOnlyMapped['Question'] = relationship(
+    questions = relationship(
         'Question', back_populates='quiz')
 
     attempts: WriteOnlyMapped['QuizAttempt'] = relationship(
         'QuizAttempt', back_populates='quiz')
+
+    def question_count(self):
+        return len(self.questions)
 
     def __repr__(self) -> str:
         return f'Quiz <{self.id}>'
@@ -49,7 +52,9 @@ class Quiz(db.Model):
             'id': self.id,
             'subject': self.subject,
             'created_at': self.created_at.isoformat(),
-            'creator': self.creator.to_dict()
+            'creator': self.creator.to_dict(),
+            'questions': [question.to_dict() for question in self.questions],
+            'question_count': self.question_count()
         }
 
 
@@ -61,18 +66,30 @@ class Question(db.Model):
     quiz_id: Mapped[int] = mapped_column(ForeignKey(Quiz.id), index=True)
     quiz: Mapped[Quiz] = relationship('Quiz', back_populates='questions')
 
-    choices: WriteOnlyMapped['Choice'] = relationship(
+    choices = relationship(
         'Choice', back_populates='question')
+
+    def choices_count(self):
+        return len(self.choices)
 
     def __repr__(self) -> str:
         return f'Question <{self.id}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'text': self.text,
+            'quiz_id': self.quiz_id,
+            'choices': [choice.to_dict() for choice in self.choices],
+            'choices-count': self.choices_count
+        }
 
 
 class Choice(db.Model):
     __tablename__ = 'choice'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     text: Mapped[str] = mapped_column(String(100))
-    is_correct: Mapped[bool]
+    correct: Mapped[bool]
 
     question_id: Mapped[int] = mapped_column(
         ForeignKey(Question.id), index=True)
@@ -84,6 +101,14 @@ class Choice(db.Model):
 
     def __repr__(self) -> str:
         return f'Choice <{self.id}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'text': self.text,
+            'correct': self.correct,
+            'question_id': self.question_id
+        }
 
 
 class QuizAttempt(db.Model):
@@ -101,6 +126,14 @@ class QuizAttempt(db.Model):
     user_choices: WriteOnlyMapped['UserChoice'] = relationship(
         'UserChoice', back_populates='attempt')
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'timestamp': self.timestamp.isoformat(),
+            'quiz_id': self.quiz_id,
+            'user_id': self.user_id
+        }
+
 
 class UserChoice(db.Model):
     __tablename__ = 'user_choice'
@@ -114,3 +147,14 @@ class UserChoice(db.Model):
     choice_id: Mapped[int] = mapped_column(ForeignKey(Choice.id), index=True)
     choice: Mapped[Choice] = relationship(
         'Choice', back_populates='user_choices')
+
+    def correct(self) -> bool:
+        return self.choice.correct
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'attempt_id': self.attempt_id,
+            'choice': self.choice.to_dict(),
+            'correct': self.correct()
+        }
