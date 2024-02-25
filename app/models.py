@@ -44,6 +44,14 @@ class Quiz(db.Model):
     def __repr__(self) -> str:
         return f'Quiz <{self.id}>'
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'subject': self.subject,
+            'created_at': self.created_at.isoformat(),
+            'creator': self.creator.to_dict()
+        }
+
 
 class Question(db.Model):
     __tablename__ = 'question'
