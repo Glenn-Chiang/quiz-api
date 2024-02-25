@@ -4,4 +4,7 @@ app = Flask(__name__)
 
 @app.get('/')
 def index():
-    return 'Hello world! Goodbye'
+    return 'Hello world!'
+
+from app import routes
+from app import models
