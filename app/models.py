@@ -14,6 +14,9 @@ class User(db.Model):
     quiz_attempts: WriteOnlyMapped['QuizAttempt'] = relationship(
         'QuizAttempt', back_populates='user')
 
+    def __repr__(self) -> str:
+        return f'User <{self.id}>'
+    
 
 class Quiz(db.Model):
     __tablename__ = 'quiz'
@@ -32,6 +35,8 @@ class Quiz(db.Model):
     attempts: WriteOnlyMapped['QuizAttempt'] = relationship(
         'QuizAttempt', back_populates='quiz')
 
+    def __repr__(self) -> str:
+        return f'Quiz <{self.id}>'
 
 class Question(db.Model):
     __tablename__ = 'question'
@@ -44,6 +49,8 @@ class Question(db.Model):
     choices: WriteOnlyMapped['Choice'] = relationship(
         'Choice', back_populates='question')
 
+    def __repr__(self) -> str:
+        return f'Question <{self.id}>'
 
 class Choice(db.Model):
     __tablename__ = 'choice'
@@ -59,6 +66,8 @@ class Choice(db.Model):
     user_choices: WriteOnlyMapped['UserChoice'] = relationship(
         'UserChoice', back_populates='choice')
 
+    def __repr__(self) -> str:
+        return f'Choice <{self.id}>'
 
 class QuizAttempt(db.Model):
     __tablename__ = 'quiz_attempt'

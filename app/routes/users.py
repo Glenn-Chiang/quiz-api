@@ -1,11 +1,14 @@
-from app import app
+from flask import jsonify
+from app import app, db
+from app.models import User
 
 
 @app.get('/users')
 def get_users():
-    return 'users'
+    users = User.query.all()
+    return jsonify(users)
 
 
-@app.get('/users/<user_id>')
-def get_user(user_id: str):
-    return f'User: {user_id}'
+@app.get('/users/<int:user_id>')
+def get_user(user_id):
+    return User.query.get_or_404(ident=user_id)
