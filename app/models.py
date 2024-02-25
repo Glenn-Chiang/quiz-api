@@ -23,6 +23,9 @@ class User(db.Model):
             'username': self.username,
         }
 
+    def __init__(self, username: str) -> None:
+        self.username = username
+
 
 class Quiz(db.Model):
     __tablename__ = 'quiz'
@@ -57,6 +60,10 @@ class Quiz(db.Model):
             'question_count': self.question_count()
         }
 
+    def __init__(self, subject: str, creator_id: int) -> None:
+        self.subject = subject
+        self.creator_id = creator_id
+
 
 class Question(db.Model):
     __tablename__ = 'question'
@@ -84,6 +91,10 @@ class Question(db.Model):
             'choices-count': self.choices_count
         }
 
+    def __init__(self, text: str, quiz_id: int) -> None:
+        self.text = text
+        self.quiz_id = quiz_id
+
 
 class Choice(db.Model):
     __tablename__ = 'choice'
@@ -110,6 +121,11 @@ class Choice(db.Model):
             'question_id': self.question_id
         }
 
+    def __init__(self, text: str, correct: bool, question_id: int) -> None:
+        self.text = text
+        self.correct = correct
+        self.question_id = question_id
+
 
 class QuizAttempt(db.Model):
     __tablename__ = 'quiz_attempt'
@@ -133,6 +149,10 @@ class QuizAttempt(db.Model):
             'quiz_id': self.quiz_id,
             'user_id': self.user_id
         }
+
+    def __init__(self, quiz_id: int, user_id: int) -> None:
+        self.quiz_id = quiz_id
+        self.user_id = user_id
 
 
 class UserChoice(db.Model):
@@ -158,3 +178,7 @@ class UserChoice(db.Model):
             'choice': self.choice.to_dict(),
             'correct': self.correct()
         }
+
+    def __init__(self, attempt_id: int, choice_id: int) -> None:
+        self.attempt_id = attempt_id
+        self.choice_id = choice_id

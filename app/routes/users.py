@@ -14,4 +14,11 @@ def get_user(user_id):
 
 @app.post('/users')
 def create_user():
-    pass
+    user_data = request.get_json()
+    if 'username' not in user_data:
+        #TODO: Handle missing username
+        ...
+    username = user_data['username']
+    user = User(username=username)
+    db.session.add(user)
+    db.session.commit()
