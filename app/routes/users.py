@@ -5,13 +5,12 @@ from app.models import User
 
 @app.get('/users')
 def get_users():
-    users = User.query.all()
-    return jsonify(users)
+    return [user.to_dict() for user in User.query.all()]
 
 
 @app.get('/users/<int:user_id>')
 def get_user(user_id):
-    return User.query.get_or_404(ident=user_id)
+    return User.query.get_or_404(ident=user_id).to_dict()
 
 @app.post('/users')
 def create_user():

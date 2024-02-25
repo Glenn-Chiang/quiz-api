@@ -16,7 +16,13 @@ class User(db.Model):
 
     def __repr__(self) -> str:
         return f'User <{self.username}>'
-    
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+        }
+
 
 class Quiz(db.Model):
     __tablename__ = 'quiz'
@@ -38,6 +44,7 @@ class Quiz(db.Model):
     def __repr__(self) -> str:
         return f'Quiz <{self.id}>'
 
+
 class Question(db.Model):
     __tablename__ = 'question'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -51,6 +58,7 @@ class Question(db.Model):
 
     def __repr__(self) -> str:
         return f'Question <{self.id}>'
+
 
 class Choice(db.Model):
     __tablename__ = 'choice'
@@ -68,6 +76,7 @@ class Choice(db.Model):
 
     def __repr__(self) -> str:
         return f'Choice <{self.id}>'
+
 
 class QuizAttempt(db.Model):
     __tablename__ = 'quiz_attempt'
