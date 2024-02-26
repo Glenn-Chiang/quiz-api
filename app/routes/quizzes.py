@@ -41,12 +41,13 @@ def create_quiz():
     except Exception as error:
         return error_response(status_code=500, message=f"Error generating questions: {error}")
 
-    questions = [Question(text=question['question'], quiz_id=quiz.id,
-                          choices=[Choice(text=choice['text'], correct=choice['correct']) for choice in question['choices']])
-                 for question in questions_with_choices]
+    for question_data in questions_with_choices:
+        question = Question(text=question_data['question'], quiz_id=quiz.id)
+        db.session.add(question)
+        db.session.flush()
 
-    db.session.bulk_save_objects(questions)
-    db.session.flush()
+        choices = [Choice(text=choice['text'], correct=choice['correct'], question_id=question.id) for choice in question_data['choices']]
+        db.session.bulk_save_objects(choices)
 
     db.session.commit()
 

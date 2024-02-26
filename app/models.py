@@ -16,7 +16,7 @@ class User(db.Model):
         'QuizAttempt', back_populates='user')
 
     def __repr__(self) -> str:
-        return f'User <{self.username}>'
+        return f'User <{self.id}:{self.username}>'
 
     def to_dict(self):
         return {
@@ -92,10 +92,9 @@ class Question(db.Model):
             'choices-count': self.choices_count()
         }
 
-    def __init__(self, text: str, quiz_id: int, choices: List) -> None:
+    def __init__(self, text: str, quiz_id: int) -> None:
         self.text = text
         self.quiz_id = quiz_id
-        self.choices = choices
 
 class Choice(db.Model):
     __tablename__ = 'choice'
@@ -122,7 +121,7 @@ class Choice(db.Model):
             'question_id': self.question_id
         }
 
-    def __init__(self, text: str, correct: bool, question_id: int = None) -> None:
+    def __init__(self, text: str, correct: bool, question_id: int) -> None:
         self.text = text
         self.correct = correct
         self.question_id = question_id
