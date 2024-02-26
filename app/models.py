@@ -47,7 +47,7 @@ class Quiz(db.Model):
         default=lambda: datetime.now(tz=timezone.utc))
 
     creator_id: Mapped[int] = mapped_column(
-        ForeignKey(User.id), index=True, nullable=True)
+        ForeignKey(User.id, ondelete='SET NULL'), index=True, nullable=True)
     creator: Mapped[User] = relationship(
         'User', back_populates='created_quizzes')
 
@@ -147,14 +147,16 @@ class QuizAttempt(db.Model):
     timestamp: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(tz=timezone.utc), index=True)
 
-    quiz_id: Mapped[int] = mapped_column(ForeignKey(Quiz.id), index=True)
+    quiz_id: Mapped[int] = mapped_column(
+        ForeignKey(Quiz.id, ondelete='SET NULL'), index=True, nullable=True)
     quiz: Mapped[Quiz] = relationship('Quiz', back_populates='attempts')
 
-    user_id: Mapped[int] = mapped_column(ForeignKey(User.id), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey(
+        User.id, ondelete='SET NULL'), index=True, nullable=True)
     user: Mapped[User] = relationship('User', back_populates='quiz_attempts')
 
     user_choices: WriteOnlyMapped['UserChoice'] = relationship(
-        'UserChoice', back_populates='attempt')
+        'UserChoice', back_populates='attempt', passive_deletes=True, cascade='all, delete')
 
     def to_dict(self):
         return {
@@ -174,11 +176,12 @@ class UserChoice(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
     attempt_id: Mapped[int] = mapped_column(
-        ForeignKey(QuizAttempt.id), index=True)
+        ForeignKey(QuizAttempt.id, ondelete='CASCADE'), index=True)
     attempt: Mapped[QuizAttempt] = relationship(
         'QuizAttempt', back_populates='user_choices')
 
-    choice_id: Mapped[int] = mapped_column(ForeignKey(Choice.id), index=True)
+    choice_id: Mapped[int] = mapped_column(ForeignKey(
+        Choice.id, ondelete='SET NULL'), index=True, nullable=True)
     choice: Mapped[Choice] = relationship(
         'Choice', back_populates='user_choices')
 

@@ -37,7 +37,6 @@ def generate_questions(subject: str, question_count: int, choice_count: int):
     try:
         output_json = json.loads(response_text)
         validate_output(output_json)
-        return quiz_sample # TODO: remove this later
         return output_json
     except (json.JSONDecodeError or jsonschema.ValidationError) as error:
         print('Invalid output:', error)
