@@ -26,10 +26,11 @@ def create_quiz():
     creator_id = quiz_data.get('creator_id', None)
 
     try:
+        creator_id = int(creator_id) if creator_id else None
         question_count = int(quiz_data['question_count'])
         choice_count = int(quiz_data['choice_count'])
     except ValueError:
-        return error_response(status_code=400, message=f"'question_count' and 'choice_count' must be integers")
+        return error_response(status_code=400, message=f"'question_count', 'choice_count' and 'creator_id' fields must be integers")
 
     quiz = Quiz(subject=subject, creator_id=creator_id)
     db.session.add(quiz)

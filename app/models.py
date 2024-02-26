@@ -73,7 +73,7 @@ class Quiz(db.Model):
             'question_count': self.question_count()
         }
 
-    def __init__(self, subject: str, creator_id: int) -> None:
+    def __init__(self, subject: str, creator_id: int | None = None) -> None:
         self.subject = subject
         self.creator_id = creator_id
 
