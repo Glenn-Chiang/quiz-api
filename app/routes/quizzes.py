@@ -46,7 +46,8 @@ def create_quiz():
         db.session.add(question)
         db.session.flush()
 
-        choices = [Choice(text=choice['text'], correct=choice['correct'], question_id=question.id) for choice in question_data['choices']]
+        choices = [Choice(text=choice['text'], correct=choice['correct'],
+                          question_id=question.id) for choice in question_data['choices']]
         db.session.bulk_save_objects(choices)
 
     db.session.commit()
@@ -56,8 +57,14 @@ def create_quiz():
 
 @app.delete('/quizzes/<int:quiz_id>')
 def delete_quiz(quiz_id: int):
-    rows_deleted = Quiz.query.filter(Quiz.id == quiz_id).delete()
-    if rows_deleted == 0:
-        return error_response(status_code=404, message=f'No quiz with id: {quiz_id}')
+    quiz = Quiz.query.filter(Quiz.id == quiz_id).first_or_404()
+    db.session.delete(quiz)
+    db.session.commit()
+    return '', 204
+
+
+@app.delete('/quizzes')
+def delete_all_quizzes():
+    Quiz.query.delete()
     db.session.commit()
     return '', 204

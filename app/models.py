@@ -1,7 +1,7 @@
 from typing import List
 from app import db
 from datetime import datetime, timezone
-from sqlalchemy import String, ForeignKey, select, func
+from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import mapped_column, Mapped, WriteOnlyMapped, relationship
 
 
@@ -40,7 +40,7 @@ class Quiz(db.Model):
         'User', back_populates='created_quizzes')
 
     questions = relationship(
-        'Question', back_populates='quiz')
+        'Question', back_populates='quiz', cascade='all,delete')
 
     attempts: WriteOnlyMapped['QuizAttempt'] = relationship(
         'QuizAttempt', back_populates='quiz')
@@ -71,11 +71,11 @@ class Question(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     text: Mapped[str] = mapped_column(String(100))
 
-    quiz_id: Mapped[int] = mapped_column(ForeignKey(Quiz.id), index=True)
+    quiz_id: Mapped[int] = mapped_column(ForeignKey(Quiz.id, ondelete=''), index=True)
     quiz: Mapped[Quiz] = relationship('Quiz', back_populates='questions')
 
     choices = relationship(
-        'Choice', back_populates='question')
+        'Choice', back_populates='question', cascade='all,delete')
 
     def choices_count(self):
         return len(self.choices)
