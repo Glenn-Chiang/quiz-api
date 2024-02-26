@@ -1,8 +1,8 @@
 from flask import request
 from app import app, db
-from app.models import Quiz
+from app.models import Quiz, Question, Choice
 from app.routes.errors import error_response
-from quiz_generator.quiz_generator import generate_quiz
+from quiz_generator.question_generator import generate_questions
 
 
 @app.get('/quizzes')
@@ -33,8 +33,21 @@ def create_quiz():
 
     quiz = Quiz(subject=subject, creator_id=creator_id)
     db.session.add(quiz)
-    db.session.commit()
-    db.session.refresh(quiz)
+    db.session.flush()
 
-    quiz = generate_quiz(subject=subject, question_count=question_count, choice_count=choice_count)
-    # TODO: Add quiz questions and choices to corresponding tables
+    try:
+        questions_with_choices = generate_questions(
+            subject=subject, question_count=question_count, choice_count=choice_count)
+    except Exception as error:
+        return error_response(status_code=500, message=f"Error generating questions: {error}")
+
+    questions = [Question(text=question['question'], quiz_id=quiz.id,
+                          choices=[Choice(text=choice['text'], correct=choice['correct']) for choice in question['choices']])
+                 for question in questions_with_choices]
+
+    db.session.bulk_save_objects(questions)
+    db.session.flush()
+
+    db.session.commit()
+
+    return quiz.to_dict(), 201

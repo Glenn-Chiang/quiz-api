@@ -1,3 +1,4 @@
+from typing import List
 from app import db
 from datetime import datetime, timezone
 from sqlalchemy import String, ForeignKey, select, func
@@ -88,19 +89,19 @@ class Question(db.Model):
             'text': self.text,
             'quiz_id': self.quiz_id,
             'choices': [choice.to_dict() for choice in self.choices],
-            'choices-count': self.choices_count
+            'choices-count': self.choices_count()
         }
 
-    def __init__(self, text: str, quiz_id: int) -> None:
+    def __init__(self, text: str, quiz_id: int, choices: List) -> None:
         self.text = text
         self.quiz_id = quiz_id
-
+        self.choices = choices
 
 class Choice(db.Model):
     __tablename__ = 'choice'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     text: Mapped[str] = mapped_column(String(100))
-    correct: Mapped[bool]
+    correct: Mapped[bool] = mapped_column()
 
     question_id: Mapped[int] = mapped_column(
         ForeignKey(Question.id), index=True)
@@ -121,7 +122,7 @@ class Choice(db.Model):
             'question_id': self.question_id
         }
 
-    def __init__(self, text: str, correct: bool, question_id: int) -> None:
+    def __init__(self, text: str, correct: bool, question_id: int = None) -> None:
         self.text = text
         self.correct = correct
         self.question_id = question_id

@@ -1,7 +1,7 @@
 [
     {
         "question": "example-question",
-        "options": [
+        "choices": [
             {
                 "text": "option-1",
                 "correct": true
@@ -18,7 +18,7 @@
     },
     {
         "question": "Which of the following is a programming language?",
-        "options": [
+        "choices": [
             {
                 "text": "Python",
                 "correct": true
@@ -35,7 +35,7 @@
     },
     {
         "question": "Who wrote the novel 'Do Androids Dream of Electric Sheep'?",
-        "options": [
+        "choices": [
             {
                 "text": "Philip K. Dick",
                 "correct": true
@@ -52,7 +52,7 @@
     },
     {
         "question": "Who painted 'The Persistence of Memory'?",
-        "options": [
+        "choices": [
             {
                 "text": "Pablo Picasso",
                 "correct": false

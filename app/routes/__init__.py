@@ -1,1 +1,1 @@
-from app.routes import quizzes, users
+from app.routes import quizzes, users, errors

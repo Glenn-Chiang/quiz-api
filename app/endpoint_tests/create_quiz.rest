@@ -1,0 +1,9 @@
+POST http://localhost:5000/quizzes
+Content-Type: application/json
+
+{
+    "subject": "programming",
+    "creator_id": 1,
+    "question_count": 5,
+    "choice_count": 4
+}
