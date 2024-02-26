@@ -4,11 +4,10 @@ from app import app
 
 
 def error_response(status_code: int, message: str = None):
-    response = {'status_code': status_code,
-                'error': HTTP_STATUS_CODES.get(status_code, 'Unknown error')}
+    response = {'error': HTTP_STATUS_CODES.get(status_code, 'Unknown error')}
     if message:
         response['message'] = message
-    return response
+    return response, status_code
 
 
 @app.errorhandler(HTTPException)

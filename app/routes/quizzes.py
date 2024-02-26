@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, jsonify
 from app import app, db
 from app.models import Quiz, Question, Choice
 from app.routes.errors import error_response
@@ -52,3 +52,12 @@ def create_quiz():
     db.session.commit()
 
     return quiz.to_dict(), 201
+
+
+@app.delete('/quizzes/<int:quiz_id>')
+def delete_quiz(quiz_id: int):
+    rows_deleted = Quiz.query.filter(Quiz.id == quiz_id).delete()
+    if rows_deleted == 0:
+        return error_response(status_code=404, message=f'No quiz with id: {quiz_id}')
+    db.session.commit()
+    return '', 204
