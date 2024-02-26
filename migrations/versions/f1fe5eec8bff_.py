@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: cc23716fe11e
+Revision ID: f1fe5eec8bff
 Revises: 
-Create Date: 2024-02-25 18:03:39.291401
+Create Date: 2024-02-26 20:38:41.304878
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'cc23716fe11e'
+revision = 'f1fe5eec8bff'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -41,7 +41,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('text', sa.String(length=100), nullable=False),
     sa.Column('quiz_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['quiz_id'], ['quiz.id'], ),
+    sa.ForeignKeyConstraint(['quiz_id'], ['quiz.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('question', schema=None) as batch_op:
@@ -64,9 +64,9 @@ def upgrade():
     op.create_table('choice',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('text', sa.String(length=100), nullable=False),
-    sa.Column('is_correct', sa.Boolean(), nullable=False),
+    sa.Column('correct', sa.Boolean(), nullable=False),
     sa.Column('question_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['question_id'], ['question.id'], ),
+    sa.ForeignKeyConstraint(['question_id'], ['question.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('choice', schema=None) as batch_op:

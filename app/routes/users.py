@@ -21,10 +21,11 @@ def create_user():
     if 'username' not in user_data:
         return error_response(status_code=400, message='username is required')
 
+    username = user_data['username']
+
     if User.query.filter_by(username=username).first():
         return error_response(status_code=409, message='username is already in use')
 
-    username = user_data['username']
     user = User(username=username)
     db.session.add(user)
     db.session.commit()

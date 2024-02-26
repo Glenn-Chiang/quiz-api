@@ -3,7 +3,16 @@ from app import db
 from datetime import datetime, timezone
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import mapped_column, Mapped, WriteOnlyMapped, relationship
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+from sqlite3 import Connection as SQLiteConnection
 
+@event.listens_for(Engine, 'connect')
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    if isinstance(dbapi_connection, SQLiteConnection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute('PRAGMA foreign_keys=ON')
+        cursor.close()
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -40,7 +49,7 @@ class Quiz(db.Model):
         'User', back_populates='created_quizzes')
 
     questions = relationship(
-        'Question', back_populates='quiz', cascade='all,delete')
+        'Question', back_populates='quiz', passive_deletes=True, cascade='all, delete')
 
     attempts: WriteOnlyMapped['QuizAttempt'] = relationship(
         'QuizAttempt', back_populates='quiz')
@@ -71,11 +80,12 @@ class Question(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     text: Mapped[str] = mapped_column(String(100))
 
-    quiz_id: Mapped[int] = mapped_column(ForeignKey(Quiz.id, ondelete=''), index=True)
+    quiz_id: Mapped[int] = mapped_column(
+        ForeignKey(Quiz.id, ondelete='CASCADE'), index=True)
     quiz: Mapped[Quiz] = relationship('Quiz', back_populates='questions')
 
     choices = relationship(
-        'Choice', back_populates='question', cascade='all,delete')
+        'Choice', back_populates='question', passive_deletes=True, cascade='all,delete')
 
     def choices_count(self):
         return len(self.choices)
@@ -96,6 +106,7 @@ class Question(db.Model):
         self.text = text
         self.quiz_id = quiz_id
 
+
 class Choice(db.Model):
     __tablename__ = 'choice'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -103,7 +114,7 @@ class Choice(db.Model):
     correct: Mapped[bool] = mapped_column()
 
     question_id: Mapped[int] = mapped_column(
-        ForeignKey(Question.id), index=True)
+        ForeignKey(Question.id, ondelete='CASCADE'), index=True)
     question: Mapped[Question] = relationship(
         'Question', back_populates='choices')
 
