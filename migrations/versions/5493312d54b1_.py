@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: f1fe5eec8bff
+Revision ID: 5493312d54b1
 Revises: 
-Create Date: 2024-02-26 20:38:41.304878
+Create Date: 2024-02-26 22:31:30.561146
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f1fe5eec8bff'
+revision = '5493312d54b1'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -30,8 +30,8 @@ def upgrade():
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('subject', sa.String(length=25), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('creator_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['creator_id'], ['user.id'], ),
+    sa.Column('creator_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['creator_id'], ['user.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('quiz', schema=None) as batch_op:
@@ -50,10 +50,10 @@ def upgrade():
     op.create_table('quiz_attempt',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('timestamp', sa.DateTime(), nullable=False),
-    sa.Column('quiz_id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['quiz_id'], ['quiz.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.Column('quiz_id', sa.Integer(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['quiz_id'], ['quiz.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('quiz_attempt', schema=None) as batch_op:
@@ -75,9 +75,9 @@ def upgrade():
     op.create_table('user_choice',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('attempt_id', sa.Integer(), nullable=False),
-    sa.Column('choice_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['attempt_id'], ['quiz_attempt.id'], ),
-    sa.ForeignKeyConstraint(['choice_id'], ['choice.id'], ),
+    sa.Column('choice_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['attempt_id'], ['quiz_attempt.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['choice_id'], ['choice.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('user_choice', schema=None) as batch_op:

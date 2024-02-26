@@ -46,14 +46,17 @@ class Quiz(db.Model):
     created_at: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(tz=timezone.utc))
 
+    # If the creator of a Quiz is deleted, the Quiz should remain
     creator_id: Mapped[int] = mapped_column(
         ForeignKey(User.id, ondelete='SET NULL'), index=True, nullable=True)
     creator: Mapped[User] = relationship(
         'User', back_populates='created_quizzes')
 
+    # If a Quiz is deleted, all related Questions should be deleted
     questions = relationship(
         'Question', back_populates='quiz', passive_deletes=True, cascade='all, delete')
-
+    
+    # If a Quiz is deleted, related QuizAttempts should remain
     attempts: WriteOnlyMapped['QuizAttempt'] = relationship(
         'QuizAttempt', back_populates='quiz')
 
@@ -83,10 +86,12 @@ class Question(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     text: Mapped[str] = mapped_column(String(100))
 
+    # If a Quiz is deleted, all related Questions should be deleted
     quiz_id: Mapped[int] = mapped_column(
         ForeignKey(Quiz.id, ondelete='CASCADE'), index=True)
     quiz: Mapped[Quiz] = relationship('Quiz', back_populates='questions')
 
+    # If a Question is deleted, all related Choices should be deleted
     choices = relationship(
         'Choice', back_populates='question', passive_deletes=True, cascade='all,delete')
 
@@ -116,6 +121,7 @@ class Choice(db.Model):
     text: Mapped[str] = mapped_column(String(100))
     correct: Mapped[bool] = mapped_column()
 
+    # If a Question is deleted, all related Choices should be deleted
     question_id: Mapped[int] = mapped_column(
         ForeignKey(Question.id, ondelete='CASCADE'), index=True)
     question: Mapped[Question] = relationship(
@@ -147,10 +153,13 @@ class QuizAttempt(db.Model):
     timestamp: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(tz=timezone.utc), index=True)
 
+    # If the Quiz associated with the QuizAttempt is deleted, set quiz_id to null and retain the QuizAttempt
+    # This allows users to still view their QuizAttempts even if the related Quiz is deleted
     quiz_id: Mapped[int] = mapped_column(
         ForeignKey(Quiz.id, ondelete='SET NULL'), index=True, nullable=True)
     quiz: Mapped[Quiz] = relationship('Quiz', back_populates='attempts')
 
+    # If a User is deleted, their attempts should remain (?)
     user_id: Mapped[int] = mapped_column(ForeignKey(
         User.id, ondelete='SET NULL'), index=True, nullable=True)
     user: Mapped[User] = relationship('User', back_populates='quiz_attempts')
@@ -175,11 +184,13 @@ class UserChoice(db.Model):
     __tablename__ = 'user_choice'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
+    # If QuizAttempt is deleted, all related UserChoices should be deleted
     attempt_id: Mapped[int] = mapped_column(
         ForeignKey(QuizAttempt.id, ondelete='CASCADE'), index=True)
     attempt: Mapped[QuizAttempt] = relationship(
         'QuizAttempt', back_populates='user_choices')
 
+    # If choice is deleted (likely cascaded from deleting a Quiz), set choice_id to null
     choice_id: Mapped[int] = mapped_column(ForeignKey(
         Choice.id, ondelete='SET NULL'), index=True, nullable=True)
     choice: Mapped[Choice] = relationship(
