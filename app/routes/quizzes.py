@@ -18,12 +18,12 @@ def get_quiz(quiz_id: int):
 @app.post('/quizzes')
 def create_quiz():
     quiz_data = request.get_json()
-    for field in ['subject', 'creator_id', 'question_count', 'choice_count']:
+    for field in ['subject', 'question_count', 'choice_count']:
         if field not in quiz_data:
-            return error_response(status_code=400, message=f'"{field}" field is required')
+            return error_response(status_code=400, message=f"'{field}' field is required")
 
     subject = quiz_data['subject']
-    creator_id = quiz_data['creator_id']
+    creator_id = quiz_data.get('creator_id', None)
 
     try:
         question_count = int(quiz_data['question_count'])

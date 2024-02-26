@@ -3,7 +3,6 @@ Content-Type: application/json
 
 {
     "subject": "test",
-    "creator_id": 1,
     "question_count": 5,
     "choice_count": 4
 }

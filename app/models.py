@@ -7,12 +7,14 @@ from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from sqlite3 import Connection as SQLiteConnection
 
+
 @event.listens_for(Engine, 'connect')
 def set_sqlite_pragma(dbapi_connection, connection_record):
     if isinstance(dbapi_connection, SQLiteConnection):
         cursor = dbapi_connection.cursor()
         cursor.execute('PRAGMA foreign_keys=ON')
         cursor.close()
+
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -44,7 +46,8 @@ class Quiz(db.Model):
     created_at: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(tz=timezone.utc))
 
-    creator_id: Mapped[int] = mapped_column(ForeignKey(User.id), index=True)
+    creator_id: Mapped[int] = mapped_column(
+        ForeignKey(User.id), index=True, nullable=True)
     creator: Mapped[User] = relationship(
         'User', back_populates='created_quizzes')
 
@@ -65,7 +68,7 @@ class Quiz(db.Model):
             'id': self.id,
             'subject': self.subject,
             'created_at': self.created_at.isoformat(),
-            'creator': self.creator.to_dict(),
+            'creator': self.creator.to_dict() if self.creator else None,
             'questions': [question.to_dict() for question in self.questions],
             'question_count': self.question_count()
         }
