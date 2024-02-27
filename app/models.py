@@ -180,7 +180,8 @@ class QuizAttempt(db.Model):
             'id': self.id,
             'timestamp': self.timestamp.isoformat(),
             'quiz_id': self.quiz_id,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'attempted_questions': [question.to_dict() for question in self.questions]
         }
 
     def __init__(self, quiz_id: int, user_id: int) -> None:
