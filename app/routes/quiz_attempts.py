@@ -8,8 +8,8 @@ def get_all_attempts():
 
 
 @app.get('/attempts/<int:attempt_id>')
-def get_attempt_by_id(quiz_id: int):
-    return QuizAttempt.query.get_or_404(ident=quiz_id).to_dict()
+def get_attempt_by_id(attempt_id: int):
+    return QuizAttempt.query.get_or_404(ident=attempt_id).to_dict()
 
 
 @app.get('/quizzes/<int:quiz_id>/attempts')

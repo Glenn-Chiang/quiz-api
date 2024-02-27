@@ -1,7 +1,7 @@
 from typing import List
 from app import db
 from datetime import datetime, timezone
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.orm import mapped_column, Mapped, WriteOnlyMapped, relationship
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
@@ -55,7 +55,7 @@ class Quiz(db.Model):
     # If a Quiz is deleted, all related Questions should be deleted
     questions = relationship(
         'Question', back_populates='quiz', passive_deletes=True, cascade='all, delete')
-    
+
     # If a Quiz is deleted, related QuizAttempts should remain
     attempts: WriteOnlyMapped['QuizAttempt'] = relationship(
         'QuizAttempt', back_populates='quiz')
@@ -94,6 +94,9 @@ class Question(db.Model):
     # If a Question is deleted, all related Choices should be deleted
     choices = relationship(
         'Choice', back_populates='question', passive_deletes=True, cascade='all,delete')
+
+    attempted_questions: WriteOnlyMapped['AttemptQuestion'] = relationship(
+        'AttemptQuestion', back_populates='question')
 
     def choices_count(self):
         return len(self.choices)
@@ -159,10 +162,15 @@ class QuizAttempt(db.Model):
         ForeignKey(Quiz.id, ondelete='SET NULL'), index=True, nullable=True)
     quiz: Mapped[Quiz] = relationship('Quiz', back_populates='attempts')
 
+    # The User who made this QuizAttempt
     # If a User is deleted, their attempts should remain (?)
     user_id: Mapped[int] = mapped_column(ForeignKey(
         User.id, ondelete='SET NULL'), index=True, nullable=True)
     user: Mapped[User] = relationship('User', back_populates='quiz_attempts')
+
+    # AttemptQuestions with sequence numbers
+    questions = relationship('AttemptQuestion', back_populates='attempt',
+                             passive_deletes=True, cascade='all, delete')
 
     user_choices: WriteOnlyMapped['UserChoice'] = relationship(
         'UserChoice', back_populates='attempt', passive_deletes=True, cascade='all, delete')
@@ -180,21 +188,47 @@ class QuizAttempt(db.Model):
         self.user_id = user_id
 
 
+# QuizAttempts contain Questions in a certain order that we want to retain.
+# An AttemptQuestion stores the sequence_number of each Question in the Quiz to determine the order in which it appears in the QuizAttempt
+class AttemptQuestion(db.Model):
+    __tablename__ = 'attempt_question'
+
+    # attempt_id and question_id act as composite primary key
+    attempt_id: Mapped[int] = mapped_column(ForeignKey(
+        QuizAttempt.id, ondelete='CASCADE'), index=True, primary_key=True)
+    attempt: Mapped[QuizAttempt] = relationship(
+        'QuizAttempt', back_populates='questions')
+
+    question_id: Mapped[int] = mapped_column(
+        ForeignKey(Question.id, ondelete='SET NULL'), index=True, primary_key=True)
+    question: Mapped[Question] = relationship(
+        'Question', back_populates='attempted_questions')
+
+    # To determine the order in which the Question appeared in the QuizAttempt
+    sequence_number: Mapped[int] = mapped_column()
+
+    def to_dict(self):
+        return {
+            'attempt_id': self.attempt_id,
+            'question_id': self.question_id,
+            'question': self.question.to_dict(),
+            'sequence_number': self.sequence_number
+        }
+
+
+# Choice chosen by User for an AttemptQuestion in a QuizAttempt
 class UserChoice(db.Model):
     __tablename__ = 'user_choice'
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-
-    # If QuizAttempt is deleted, all related UserChoices should be deleted
-    attempt_id: Mapped[int] = mapped_column(
-        ForeignKey(QuizAttempt.id, ondelete='CASCADE'), index=True)
-    attempt: Mapped[QuizAttempt] = relationship(
-        'QuizAttempt', back_populates='user_choices')
 
     # If choice is deleted (likely cascaded from deleting a Quiz), set choice_id to null
     choice_id: Mapped[int] = mapped_column(ForeignKey(
-        Choice.id, ondelete='SET NULL'), index=True, nullable=True)
+        Choice.id, ondelete='SET NULL'), primary_key=True, index=True, nullable=True)
     choice: Mapped[Choice] = relationship(
         'Choice', back_populates='user_choices')
+
+    attempt_id: Mapped[int] = mapped_column(ForeignKey(
+        QuizAttempt.id, ondelete='CASCADE'), primary_key=True, index=True)
+    attempt: Mapped[QuizAttempt] = relationship('QuizAttempt', back_populates='user_choices')
 
     def correct(self) -> bool:
         return self.choice.correct

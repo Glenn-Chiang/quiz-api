@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 5493312d54b1
+Revision ID: a83ef5fc6358
 Revises: 
-Create Date: 2024-02-26 22:31:30.561146
+Create Date: 2024-02-27 20:29:42.858695
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5493312d54b1'
+revision = 'a83ef5fc6358'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -61,6 +61,18 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_quiz_attempt_timestamp'), ['timestamp'], unique=False)
         batch_op.create_index(batch_op.f('ix_quiz_attempt_user_id'), ['user_id'], unique=False)
 
+    op.create_table('attempt_question',
+    sa.Column('attempt_id', sa.Integer(), nullable=False),
+    sa.Column('question_id', sa.Integer(), nullable=False),
+    sa.Column('sequence_number', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['attempt_id'], ['quiz_attempt.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['question_id'], ['question.id'], ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('attempt_id', 'question_id')
+    )
+    with op.batch_alter_table('attempt_question', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_attempt_question_attempt_id'), ['attempt_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_attempt_question_question_id'), ['question_id'], unique=False)
+
     op.create_table('choice',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('text', sa.String(length=100), nullable=False),
@@ -73,12 +85,11 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_choice_question_id'), ['question_id'], unique=False)
 
     op.create_table('user_choice',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('attempt_id', sa.Integer(), nullable=False),
     sa.Column('choice_id', sa.Integer(), nullable=True),
+    sa.Column('attempt_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['attempt_id'], ['quiz_attempt.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['choice_id'], ['choice.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('choice_id', 'attempt_id')
     )
     with op.batch_alter_table('user_choice', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_user_choice_attempt_id'), ['attempt_id'], unique=False)
@@ -98,6 +109,11 @@ def downgrade():
         batch_op.drop_index(batch_op.f('ix_choice_question_id'))
 
     op.drop_table('choice')
+    with op.batch_alter_table('attempt_question', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_attempt_question_question_id'))
+        batch_op.drop_index(batch_op.f('ix_attempt_question_attempt_id'))
+
+    op.drop_table('attempt_question')
     with op.batch_alter_table('quiz_attempt', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_quiz_attempt_user_id'))
         batch_op.drop_index(batch_op.f('ix_quiz_attempt_timestamp'))
