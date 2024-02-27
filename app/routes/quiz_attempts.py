@@ -23,11 +23,12 @@ def get_user_attempts(user_id: int):
     return [attempt.to_dict() for attempt in QuizAttempt.query.filter(QuizAttempt.user_id == user_id).all()]
 
 
+# Should be called when a user starts to attempt a quiz
 @app.post('/quizzes/<int:quiz_id>/attempts')
 def add_quiz_attempt(quiz_id: int):
     user_id = request.args.get('user_id', type=int)
     if not user_id:
-        return error_response(status_code=400, message='Invalid or missing user_id')
+        return error_response(status_code=400, message='Missing or invalid user_id')
     
     quiz_attempt = QuizAttempt(quiz_id=quiz_id, user_id=user_id)
     db.session.add(quiz_attempt)

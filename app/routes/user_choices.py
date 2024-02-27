@@ -1,5 +1,7 @@
-from app import app
+from app import app, db
 from app.models import UserChoice, Choice
+from flask import request
+from app.routes.errors import error_response
 
 
 @app.get('/user_choices')
@@ -27,3 +29,15 @@ def get_user_choices_for_choice(choice_id: int):
     return [user_choice.to_dict() for user_choice in UserChoice.query.filter(UserChoice.choice_id == choice_id).all()]
 
 
+# Call this endpoint to set the choice chosen by the user in a quiz attempt
+@app.post('/attempts/<int:attempt_id>/user_choices')
+def add_user_choice(attempt_id: int):
+    choice_id = request.args.get('choice_id', type=int)
+    if not choice_id:
+        return error_response(status_code=400, message='Missing or invalid choice_id')
+
+    user_choice = UserChoice(attempt_id=attempt_id, choice_id=choice_id)
+    db.session.add(user_choice)
+    db.session.commit()
+
+    return user_choice.to_dict(), 201
