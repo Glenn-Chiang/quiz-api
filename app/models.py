@@ -110,7 +110,7 @@ class Question(db.Model):
             'text': self.text,
             'quiz_id': self.quiz_id,
             'choices': [choice.to_dict() for choice in self.choices],
-            'choices-count': self.choices_count()
+            'choices_count': self.choices_count()
         }
 
     def __init__(self, text: str, quiz_id: int) -> None:
