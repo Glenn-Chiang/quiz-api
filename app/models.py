@@ -207,12 +207,18 @@ class AttemptQuestion(db.Model):
     # To determine the order in which the Question appeared in the QuizAttempt
     sequence_number: Mapped[int] = mapped_column()
 
+    def get_user_choice(self):
+        user_choice = UserChoice.query.join(Choice, Choice.id == UserChoice.choice_id).filter(
+            UserChoice.attempt_id == self.attempt_id, Choice.question_id == self.question_id).first()
+        return user_choice.to_dict() if user_choice else None
+
     def to_dict(self):
         return {
             'attempt_id': self.attempt_id,
             'question_id': self.question_id,
             'question': self.question.to_dict(),
-            'sequence_number': self.sequence_number
+            'sequence_number': self.sequence_number,
+            'user_choice': self.get_user_choice()
         }
 
 
@@ -228,7 +234,8 @@ class UserChoice(db.Model):
 
     attempt_id: Mapped[int] = mapped_column(ForeignKey(
         QuizAttempt.id, ondelete='CASCADE'), primary_key=True, index=True)
-    attempt: Mapped[QuizAttempt] = relationship('QuizAttempt', back_populates='user_choices')
+    attempt: Mapped[QuizAttempt] = relationship(
+        'QuizAttempt', back_populates='user_choices')
 
     def correct(self) -> bool:
         return self.choice.correct
@@ -237,6 +244,7 @@ class UserChoice(db.Model):
         return {
             'id': self.id,
             'attempt_id': self.attempt_id,
+            'user_id': self.attempt.user_id,
             'choice': self.choice.to_dict(),
             'correct': self.correct()
         }
