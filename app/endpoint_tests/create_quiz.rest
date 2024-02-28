@@ -2,7 +2,7 @@ POST http://localhost:5000/quizzes
 Content-Type: application/json
 
 {
-    "subject": "history",
-    "question_count": 5,
+    "subject": "art",
+    "question_count": 20,
     "choice_count": 4
 }

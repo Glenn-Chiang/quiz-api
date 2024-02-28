@@ -1,3 +1,4 @@
+import random
 from typing import List
 from app import db
 from datetime import datetime, timezone
@@ -72,7 +73,6 @@ class Quiz(db.Model):
             'subject': self.subject,
             'created_at': self.created_at.isoformat(),
             'creator': self.creator.to_dict() if self.creator else None,
-            'questions': [question.to_dict() for question in self.questions],
             'question_count': self.question_count()
         }
 
@@ -101,6 +101,10 @@ class Question(db.Model):
     def choices_count(self):
         return len(self.choices)
 
+    def shuffle_choices(self):
+        random.shuffle(self.choices)
+        return self.choices
+
     def __repr__(self) -> str:
         return f'Question <{self.id}>'
 
@@ -109,7 +113,7 @@ class Question(db.Model):
             'id': self.id,
             'text': self.text,
             'quiz_id': self.quiz_id,
-            'choices': [choice.to_dict() for choice in self.choices],
+            'choices': [choice.to_dict() for choice in self.shuffle_choices()],
             'choices_count': self.choices_count()
         }
 
