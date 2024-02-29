@@ -15,6 +15,12 @@ def get_quiz(quiz_id: int):
     return Quiz.query.get_or_404(ident=quiz_id).to_dict()
 
 
+MIN_QUESTIONS = 5
+MAX_QUESTIONS = 20
+MIN_CHOICES = 2
+MAX_CHOICES = 6
+
+
 @app.post('/quizzes')
 def create_quiz():
     quiz_data = request.get_json()
@@ -29,8 +35,15 @@ def create_quiz():
         creator_id = int(creator_id) if creator_id else None
         question_count = int(quiz_data['question_count'])
         choice_count = int(quiz_data['choice_count'])
+
+        # Limit the question_count and choice_count that can be requested
+        if question_count < MIN_QUESTIONS or question_count > MAX_QUESTIONS:
+            return error_response(status_code=400, message=f"Allowed range for question_count: {MIN_QUESTIONS} - {MAX_QUESTIONS}")
+        if choice_count < MIN_QUESTIONS or choice_count > MAX_CHOICES:
+            return error_response(status_code=400, message=f"Allowed range for choice_count: {MIN_CHOICES} - {MAX_CHOICES}")
+
     except ValueError:
-        return error_response(status_code=400, message=f"'question_count', 'choice_count' and 'creator_id' fields must be integers")
+        return error_response(status_code=400, message=f"question_count, choice_count and creator_id must be integers")
 
     quiz = Quiz(subject=subject, creator_id=creator_id)
     db.session.add(quiz)

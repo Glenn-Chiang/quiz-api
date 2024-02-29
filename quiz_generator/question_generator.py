@@ -31,7 +31,7 @@ def generate_questions(subject: str, question_count: int, choice_count: int):
         response_text = response.text
     except Exception as error:
         print(f'Error generating response from gemini:', error)
-        return
+        raise error
 
     # Check if gemini returned output in correct format
     try:
