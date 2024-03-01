@@ -1,12 +1,12 @@
 # quiz-api
 An API server for creating and fetching AI-generated quizzes
 
-# Getting started
+## Getting started
 
-## Obtaining a Gemini API key
+### Obtaining a Gemini API key
 [Create an API key](https://aistudio.google.com/app/apikey) to use Google's Gemini API, which will be used to generate quizzes
 
-## Installation and setup
+### Installation and setup
 1. Clone the repository and navigate to its directory
 ```
 git clone https://github.com/Glenn-Chiang/quiz-api
@@ -27,13 +27,22 @@ GEMINI_API_KEY='your_api_key_here'
 ```
 5. Initialize the database
 ```
-flask db init
-flask db migrate
 flask db upgrade
 ```
 6. Run the server
 ```
 flask run
+```
+
+### Running with Docker
+Note: If you are using docker, you only need to follow steps 1 and 4 in [Installation and setup](#installation-and-setup)
+1. Build the image
+```
+docker build -t quiz-api .
+```
+2. Run the container
+```
+docker run -p 5000:5000 --env-file .env --rm quiz-api
 ```
 
 ## Usage
