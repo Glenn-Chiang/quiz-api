@@ -6,7 +6,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Install web server
-# RUN pip install gunicorn
+RUN pip install gunicorn
 
 COPY . .
 
@@ -15,4 +15,4 @@ RUN flask db upgrade
 
 EXPOSE 5000
 
-CMD ["flask", "run", "--host", "0.0.0.0"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
