@@ -2,16 +2,22 @@ from app import app, db
 from app.models import Question
 from flask import request
 from sqlalchemy.sql.expression import func
+from sqlalchemy import select
 
 
 @app.get('/questions')
 def get_all_questions():
-    return [question.to_dict() for question in Question.query.all()]
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 20, type=int), 100)
+    return Question.to_collection_dict(select(Question), page=page, per_page=per_page, endpoint='get_quizzes')
 
 
 @app.get('/quizzes/<int:quiz_id>/questions')
 def get_quiz_questions(quiz_id: int):
-    return [question.to_dict() for question in Question.query.filter_by(quiz_id=quiz_id).order_by(func.random()).all()]
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 20, type=int), 100)
+    return Question.to_collection_dict(select(Question).where(Question.quiz_id == quiz_id).order_by(func.random()),
+                                       page=page, per_page=per_page, endpoint='get_quiz_questions', quiz_id=quiz_id)
 
 
 @app.delete('/questions')

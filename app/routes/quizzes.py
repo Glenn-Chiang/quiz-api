@@ -15,7 +15,7 @@ def get_quiz(quiz_id: int):
 def get_quizzes():
     page = request.args.get('page', 1, type=int)
     # default 10 per page, maximum 100 per page
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    per_page = min(request.args.get('per_page', 20, type=int), 100)
     return Quiz.to_collection_dict(select(Quiz), page=page, per_page=per_page, endpoint='get_quizzes')
 
 

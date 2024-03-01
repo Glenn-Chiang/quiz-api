@@ -19,7 +19,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 class PaginatedMixin(object):
     @staticmethod
-    def to_collection_dict(query, page, per_page, endpoint, **kwargs):
+    def to_collection_dict(query, endpoint: str, page: int = 1, per_page: int = 20, **kwargs):
         pagination = db.paginate(query, page=page, per_page=per_page, error_out=False)
 
         return {
