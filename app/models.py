@@ -7,7 +7,7 @@ from sqlalchemy.orm import mapped_column, Mapped, WriteOnlyMapped, relationship
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from sqlite3 import Connection as SQLiteConnection
-
+from flask import url_for
 
 @event.listens_for(Engine, 'connect')
 def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -17,7 +17,28 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.close()
 
 
-class User(db.Model):
+class PaginatedMixin(object):
+    @staticmethod
+    def to_collection_dict(query, page, per_page, endpoint, **kwargs):
+        pagination = db.paginate(query, page=page, per_page=per_page, error_out=False)
+
+        return {
+            'items': [item.to_dict() for item in pagination.items],
+            '_meta': {
+                'page': page,
+                'per_page': per_page,
+                'total_pages': pagination.pages,
+                'total_items': pagination.total
+            },
+            '_links': {
+                'self': url_for(endpoint, page=page, per_page=per_page, **kwargs),
+                'next': url_for(endpoint, page=page + 1, per_page=per_page, **kwargs) if pagination.has_next else None,
+                'prev': url_for(endpoint, page=page - 1, per_page=per_page, **kwargs) if pagination.has_prev else None
+            }
+        }
+
+
+class User(PaginatedMixin, db.Model):
     __tablename__ = 'user'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(25), unique=True, index=True)
@@ -40,7 +61,7 @@ class User(db.Model):
         self.username = username
 
 
-class Quiz(db.Model):
+class Quiz(PaginatedMixin, db.Model):
     __tablename__ = 'quiz'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     subject: Mapped[str] = mapped_column(String(25))
@@ -81,7 +102,7 @@ class Quiz(db.Model):
         self.creator_id = creator_id
 
 
-class Question(db.Model):
+class Question(PaginatedMixin, db.Model):
     __tablename__ = 'question'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     text: Mapped[str] = mapped_column(String(100))
@@ -122,7 +143,7 @@ class Question(db.Model):
         self.quiz_id = quiz_id
 
 
-class Choice(db.Model):
+class Choice(PaginatedMixin, db.Model):
     __tablename__ = 'choice'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     text: Mapped[str] = mapped_column(String(100))
@@ -154,7 +175,7 @@ class Choice(db.Model):
         self.question_id = question_id
 
 
-class QuizAttempt(db.Model):
+class QuizAttempt(PaginatedMixin, db.Model):
     __tablename__ = 'quiz_attempt'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     timestamp: Mapped[datetime] = mapped_column(
@@ -195,7 +216,7 @@ class QuizAttempt(db.Model):
 
 # QuizAttempts contain Questions in a certain order that we want to retain.
 # An AttemptQuestion stores the sequence_number of each Question in the Quiz to determine the order in which it appears in the QuizAttempt
-class AttemptQuestion(db.Model):
+class AttemptQuestion(PaginatedMixin, db.Model):
     __tablename__ = 'attempt_question'
 
     # attempt_id and question_id act as composite primary key
@@ -228,7 +249,7 @@ class AttemptQuestion(db.Model):
 
 
 # Choice chosen by User for an AttemptQuestion in a QuizAttempt
-class UserChoice(db.Model):
+class UserChoice(PaginatedMixin, db.Model):
     __tablename__ = 'user_choice'
 
     # If choice is deleted (likely cascaded from deleting a Quiz), set choice_id to null

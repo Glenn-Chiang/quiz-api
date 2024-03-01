@@ -3,16 +3,20 @@ from app import app, db
 from app.models import Quiz, Question, Choice
 from app.routes.errors import error_response
 from quiz_generator.question_generator import generate_questions
-
-
-@app.get('/quizzes')
-def get_quizzes():
-    return [quiz.to_dict() for quiz in Quiz.query.all()]
+from sqlalchemy import select
 
 
 @app.get('/quizzes/<int:quiz_id>')
 def get_quiz(quiz_id: int):
     return Quiz.query.get_or_404(ident=quiz_id).to_dict()
+
+
+@app.get('/quizzes')
+def get_quizzes():
+    page = request.args.get('page', 1, type=int)
+    # default 10 per page, maximum 100 per page
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    return Quiz.to_collection_dict(select(Quiz), page=page, per_page=per_page, endpoint='get_quizzes')
 
 
 MIN_QUESTIONS = 5
