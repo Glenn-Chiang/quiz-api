@@ -34,15 +34,15 @@ flask db upgrade
 flask run
 ```
 
-### Running with Docker
+### Running with Docker and PostgreSQL (optional)
 Note: If you are using docker, you only need to follow steps 1 and 4 in [Installation and setup](#installation-and-setup)
-1. Build the image
+1. Add a `POSTGRES_PASSWORD` environment variable to the `.env` file
 ```
-docker build -t quiz-api .
+POSTGRES_PASSWORD='your_postgres_password'
 ```
-2. Run the container
+2. Run the server alongside a PostgresSQL database container
 ```
-docker run -p 5000:5000 --env-file .env --rm quiz-api
+docker-compose up
 ```
 
 ## Usage
