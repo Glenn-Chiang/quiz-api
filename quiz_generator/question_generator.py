@@ -21,7 +21,7 @@ def generate_questions(subject: str, question_count: int, choice_count: int):
         quiz_sample_string = json.dumps(quiz_sample)
 
     prompt = (f"Given the subject below, generate a series of {question_count} quiz questions on the subject."
-              f"Each question should have {choice_count} options, of which only 1 option is correct and the rest are incorrect."
+              f"Each question should have {choice_count} options. There should be only 1 correct answer."
               f"Format your response as a JSON list as per the following example:\n"
               f"{quiz_sample_string}"
               f"\nThe subject is as follows: {subject}")

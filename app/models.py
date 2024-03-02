@@ -1,5 +1,5 @@
 import random
-from typing import List
+from typing import Optional
 from app import db
 from datetime import datetime, timezone
 from sqlalchemy import String, ForeignKey, PrimaryKeyConstraint, ForeignKeyConstraint
@@ -8,6 +8,8 @@ from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from sqlite3 import Connection as SQLiteConnection
 from flask import url_for
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 @event.listens_for(Engine, 'connect')
 def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -42,6 +44,7 @@ class User(PaginatedMixin, db.Model):
     __tablename__ = 'user_account' # Note that "user" is a reserved word in postgres, which is why we use another name here
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(25), unique=True, index=True)
+    password_hash: Mapped[Optional[str]] = mapped_column(String(256))
 
     created_quizzes: WriteOnlyMapped['Quiz'] = relationship(
         'Quiz', back_populates='creator')
@@ -59,6 +62,12 @@ class User(PaginatedMixin, db.Model):
 
     def __init__(self, username: str) -> None:
         self.username = username
+
+    def set_password(self, password: str) -> None:
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password: str) -> bool:
+        return check_password_hash(pwhash=self.password_hash, password=password)
 
 
 class Quiz(PaginatedMixin, db.Model):
