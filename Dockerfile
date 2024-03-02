@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11
 
 WORKDIR /app
 
@@ -10,9 +10,9 @@ RUN pip install gunicorn
 
 COPY . .
 
-# Initialize db schema
-RUN flask db upgrade
+# Mark entrypoint file as executable
+RUN chmod a+x entrypoint.sh
 
 EXPOSE 5000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+ENTRYPOINT ["./entrypoint.sh"]

@@ -11,3 +11,7 @@ migrate = Migrate(app, db=db)
 
 from app import routes
 from app import models
+
+# Create tables from models
+with app.app_context():
+    db.create_all()
