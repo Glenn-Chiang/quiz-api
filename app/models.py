@@ -60,14 +60,16 @@ class User(PaginatedMixin, db.Model):
             'username': self.username,
         }
 
-    def __init__(self, username: str) -> None:
+    def __init__(self, username: str, id: int = None) -> None:
         self.username = username
+        if id:
+            self.id = id
 
-    def set_password(self, password: str) -> None:
-        self.password_hash = generate_password_hash(password)
+    # def set_password(self, password: str) -> None:
+    #     self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password: str) -> bool:
-        return check_password_hash(pwhash=self.password_hash, password=password)
+    # def check_password(self, password: str) -> bool:
+    #     return check_password_hash(pwhash=self.password_hash, password=password)
 
 
 class Quiz(PaginatedMixin, db.Model):
