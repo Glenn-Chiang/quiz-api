@@ -4,6 +4,7 @@ from app.models import Quiz, Question, Choice
 from app.routes.errors import error_response
 from quiz_generator.question_generator import generate_questions
 from sqlalchemy import select
+from sqlalchemy.exc import DataError
 
 
 @app.get('/quizzes/<int:quiz_id>')
@@ -43,7 +44,7 @@ def create_quiz():
         # Limit the question_count and choice_count that can be requested
         if question_count < MIN_QUESTIONS or question_count > MAX_QUESTIONS:
             return error_response(status_code=400, message=f"Allowed range for question_count: {MIN_QUESTIONS} - {MAX_QUESTIONS}")
-        if choice_count < MIN_QUESTIONS or choice_count > MAX_CHOICES:
+        if choice_count < MIN_CHOICES or choice_count > MAX_CHOICES:
             return error_response(status_code=400, message=f"Allowed range for choice_count: {MIN_CHOICES} - {MAX_CHOICES}")
 
     except ValueError:
@@ -60,13 +61,16 @@ def create_quiz():
         return error_response(status_code=500, message=f"Error generating questions: {error}")
 
     for question_data in questions_with_choices:
-        question = Question(text=question_data['question'], quiz_id=quiz.id)
-        db.session.add(question)
-        db.session.flush()
+        try:
+            question = Question(text=question_data['question'], quiz_id=quiz.id)
+            db.session.add(question)
+            db.session.flush()
 
-        choices = [Choice(text=choice['text'], correct=choice['correct'],
-                          question_id=question.id) for choice in question_data['choices']]
-        db.session.bulk_save_objects(choices)
+            choices = [Choice(text=choice['text'], correct=choice['correct'],
+                            question_id=question.id) for choice in question_data['choices']]
+            db.session.bulk_save_objects(choices)
+        except DataError as error:
+            return error_response(status_code=400, message=f"Invalid question or choices: {error}")
 
     db.session.commit()
 

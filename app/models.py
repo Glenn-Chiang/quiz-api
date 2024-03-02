@@ -105,7 +105,7 @@ class Quiz(PaginatedMixin, db.Model):
 class Question(PaginatedMixin, db.Model):
     __tablename__ = 'question'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    text: Mapped[str] = mapped_column(String(100))
+    text: Mapped[str] = mapped_column(String(500))
 
     # If a Quiz is deleted, all related Questions should be deleted
     quiz_id: Mapped[int] = mapped_column(
