@@ -6,6 +6,10 @@ from sqlalchemy.exc import IntegrityError
 
 @app.get('/users')
 def get_users():
+    username = request.args.get('username', default=None)
+    # If username is given as query param, get user by username, else return all users
+    if username:
+        return User.query.filter(User.username == username).first_or_404().to_dict()
     return [user.to_dict() for user in User.query.all()]
 
 

@@ -44,7 +44,6 @@ class User(PaginatedMixin, db.Model):
     __tablename__ = 'user_account' # Note that "user" is a reserved word in postgres, which is why we use another name here
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(25), unique=True, index=True)
-    password_hash: Mapped[Optional[str]] = mapped_column(String(256))
 
     created_quizzes: WriteOnlyMapped['Quiz'] = relationship(
         'Quiz', back_populates='creator')
