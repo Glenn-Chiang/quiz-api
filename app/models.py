@@ -22,7 +22,8 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 class PaginatedMixin(object):
     @staticmethod
     def to_collection_dict(query, endpoint: str, page: int = 1, per_page: int = 20, **kwargs):
-        pagination = db.paginate(query, page=page, per_page=per_page, error_out=False)
+        pagination = db.paginate(
+            query, page=page, per_page=per_page, error_out=False)
 
         return {
             'items': [item.to_dict() for item in pagination.items],
@@ -41,7 +42,8 @@ class PaginatedMixin(object):
 
 
 class User(PaginatedMixin, db.Model):
-    __tablename__ = 'user_account' # Note that "user" is a reserved word in postgres, which is why we use another name here
+    # Note that "user" is a reserved word in postgres, which is why we use another name here
+    __tablename__ = 'user_account'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
 
@@ -183,7 +185,8 @@ class QuizAttempt(PaginatedMixin, db.Model):
 
     # The User who made this QuizAttempt
     # If a User is deleted, their attempts should remain (?)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user_account.id', ondelete='SET NULL'), index=True, nullable=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey(
+        'user_account.id', ondelete='SET NULL'), index=True, nullable=True)
     user: Mapped[User] = relationship('User', back_populates='quiz_attempts')
 
     # AttemptQuestions with sequence numbers
@@ -193,6 +196,11 @@ class QuizAttempt(PaginatedMixin, db.Model):
     user_choices: WriteOnlyMapped['UserChoice'] = relationship(
         'UserChoice', back_populates='attempt', passive_deletes=True, cascade='all, delete')
 
+    # Count number of correct choices
+    def count_correct(self) -> int:
+        return UserChoice.query.join(Choice, Choice.id == UserChoice.choice_id).filter(
+            UserChoice.attempt_id == self.id, Choice.correct).count()
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -200,7 +208,7 @@ class QuizAttempt(PaginatedMixin, db.Model):
             'quiz_id': self.quiz_id,
             'quiz': self.quiz.to_dict(),
             'user_id': self.user_id,
-            # 'attempted_questions': [question.to_dict() for question in self.questions]
+            'correct_count': self.count_correct()
         }
 
     def __init__(self, quiz_id: int, user_id: int) -> None:

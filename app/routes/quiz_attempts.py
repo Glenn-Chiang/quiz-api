@@ -20,7 +20,13 @@ def get_quiz_attempts(quiz_id: int):
     return [attempt.to_dict() for attempt in QuizAttempt.query.filter(QuizAttempt.quiz_id == quiz_id).all()]
 
 
-# Get all quiz attempts made by this user
+# Get questions done on given attempt
+@app.get('/attempts/<int:attempt_id>/questions')
+def get_attempt_questions(attempt_id: int):
+    return [question.to_dict() for question in AttemptQuestion.query.filter(AttemptQuestion.attempt_id == attempt_id).order_by(AttemptQuestion.sequence_number).all()]
+
+
+# Get all quiz attempts made by given user
 @app.get('/users/<int:user_id>/attempts')
 def get_user_attempts(user_id: int):
     page = request.args.get('page', 1, type=int)
