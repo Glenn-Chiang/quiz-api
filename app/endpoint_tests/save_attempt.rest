@@ -1,0 +1,11 @@
+POST http://localhost:5000/quizzes/1/attempts?user_id=1
+Content-Type: application/json
+
+{
+    "questions": [
+        {
+            "question_id": 1,
+            "choice_id": 
+        }
+    ]
+}

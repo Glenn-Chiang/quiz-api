@@ -257,6 +257,11 @@ class AttemptQuestion(PaginatedMixin, db.Model):
             'user_choice': self.get_user_choice()
         }
 
+    def __init__(self, attempt_id: int, question_id: int, sequence_number: int) -> None:
+        self.attempt_id = attempt_id
+        self.question_id = question_id
+        self.sequence_number = sequence_number
+
 
 # Choice chosen by User for an AttemptQuestion in a QuizAttempt
 class UserChoice(PaginatedMixin, db.Model):

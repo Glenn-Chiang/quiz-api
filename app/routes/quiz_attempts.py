@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import QuizAttempt
+from app.models import QuizAttempt, AttemptQuestion, UserChoice
 from flask import request
 from app.routes.errors import error_response
 from sqlalchemy import select
@@ -30,15 +30,29 @@ def get_user_attempts(user_id: int):
                                           endpoint='get_user_attempts', user_id=user_id)
 
 
-# Should be called when a user starts to attempt a quiz
+# Save a new quiz attempt with the sequence of questions given and the choices chosen by the user
 @app.post('/quizzes/<int:quiz_id>/attempts')
 def add_quiz_attempt(quiz_id: int):
     user_id = request.args.get('user_id', type=int)
     if not user_id:
         return error_response(status_code=400, message='Missing or invalid user_id')
 
+    attempt_data = request.get_json()
+    questions_with_choice = attempt_data['questions']
+
+    # Create new quiz attempt
     quiz_attempt = QuizAttempt(quiz_id=quiz_id, user_id=user_id)
     db.session.add(quiz_attempt)
+    db.session.flush()
+
+    attempt_questions = [AttemptQuestion(attempt_id=quiz_attempt.id, question_id=question['question_id'],
+                                         sequence_number=index) for index, question in enumerate(questions_with_choice)]
+    user_choices = [UserChoice(attempt_id=quiz_attempt.id, choice_id=question['choice_id'])
+                    for question in questions_with_choice]
+
+    db.session.bulk_save_objects(attempt_questions)
+    db.session.bulk_save_objects(user_choices)
+
     db.session.commit()
 
     return quiz_attempt.to_dict(), 201

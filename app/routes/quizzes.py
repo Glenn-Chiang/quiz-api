@@ -28,7 +28,7 @@ MAX_CHOICES = 6
 
 @app.post('/quizzes')
 def create_quiz():
-    quiz_data = request.get_json()
+    quiz_data: dict = request.get_json()
     for field in ['subject', 'question_count', 'choice_count']:
         if field not in quiz_data:
             return error_response(status_code=400, message=f"'{field}' field is required")
