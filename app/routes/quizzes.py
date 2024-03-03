@@ -34,10 +34,8 @@ def create_quiz():
             return error_response(status_code=400, message=f"'{field}' field is required")
 
     subject = quiz_data['subject']
-    creator_id = quiz_data.get('creator_id', None)
 
     try:
-        creator_id = int(creator_id) if creator_id else None
         question_count = int(quiz_data['question_count'])
         choice_count = int(quiz_data['choice_count'])
 
@@ -48,9 +46,9 @@ def create_quiz():
             return error_response(status_code=400, message=f"Allowed range for choice_count: {MIN_CHOICES} - {MAX_CHOICES}")
 
     except ValueError:
-        return error_response(status_code=400, message=f"question_count, choice_count and creator_id must be integers")
+        return error_response(status_code=400, message=f"question_count and choice_count must be integers")
 
-    quiz = Quiz(subject=subject, creator_id=creator_id)
+    quiz = Quiz(subject=subject)
     db.session.add(quiz)
     db.session.flush()
 

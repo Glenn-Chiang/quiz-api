@@ -5,7 +5,11 @@ Content-Type: application/json
     "questions": [
         {
             "question_id": 1,
-            "choice_id": 
+            "choice_id": 1
+        },
+        {
+            "question_id": 2,
+            "choice_id": 2
         }
     ]
 }

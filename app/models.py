@@ -43,10 +43,8 @@ class PaginatedMixin(object):
 class User(PaginatedMixin, db.Model):
     __tablename__ = 'user_account' # Note that "user" is a reserved word in postgres, which is why we use another name here
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    username: Mapped[str] = mapped_column(String(25), unique=True, index=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
 
-    created_quizzes: WriteOnlyMapped['Quiz'] = relationship(
-        'Quiz', back_populates='creator')
     quiz_attempts: WriteOnlyMapped['QuizAttempt'] = relationship(
         'QuizAttempt', back_populates='user')
 
@@ -64,12 +62,6 @@ class User(PaginatedMixin, db.Model):
         if id:
             self.id = id
 
-    # def set_password(self, password: str) -> None:
-    #     self.password_hash = generate_password_hash(password)
-
-    # def check_password(self, password: str) -> bool:
-    #     return check_password_hash(pwhash=self.password_hash, password=password)
-
 
 class Quiz(PaginatedMixin, db.Model):
     __tablename__ = 'quiz'
@@ -77,12 +69,6 @@ class Quiz(PaginatedMixin, db.Model):
     subject: Mapped[str] = mapped_column(String(25))
     created_at: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(tz=timezone.utc))
-
-    # If the creator of a Quiz is deleted, the Quiz should remain
-    creator_id: Mapped[int] = mapped_column(
-        ForeignKey(User.id, ondelete='SET NULL'), index=True, nullable=True)
-    creator: Mapped[User] = relationship(
-        'User', back_populates='created_quizzes')
 
     # If a Quiz is deleted, all related Questions should be deleted
     questions = relationship(
@@ -103,13 +89,11 @@ class Quiz(PaginatedMixin, db.Model):
             'id': self.id,
             'subject': self.subject,
             'created_at': self.created_at.isoformat(),
-            'creator': self.creator.to_dict() if self.creator else None,
             'question_count': self.question_count()
         }
 
-    def __init__(self, subject: str, creator_id: int | None = None) -> None:
+    def __init__(self, subject: str) -> None:
         self.subject = subject
-        self.creator_id = creator_id
 
 
 class Question(PaginatedMixin, db.Model):
@@ -199,8 +183,7 @@ class QuizAttempt(PaginatedMixin, db.Model):
 
     # The User who made this QuizAttempt
     # If a User is deleted, their attempts should remain (?)
-    user_id: Mapped[int] = mapped_column(ForeignKey(
-        User.id, ondelete='SET NULL'), index=True, nullable=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user_account.id', ondelete='SET NULL'), index=True, nullable=True)
     user: Mapped[User] = relationship('User', back_populates='quiz_attempts')
 
     # AttemptQuestions with sequence numbers
@@ -215,8 +198,9 @@ class QuizAttempt(PaginatedMixin, db.Model):
             'id': self.id,
             'timestamp': self.timestamp.isoformat(),
             'quiz_id': self.quiz_id,
+            'quiz': self.quiz.to_dict(),
             'user_id': self.user_id,
-            'attempted_questions': [question.to_dict() for question in self.questions]
+            # 'attempted_questions': [question.to_dict() for question in self.questions]
         }
 
     def __init__(self, quiz_id: int, user_id: int) -> None:
@@ -269,7 +253,7 @@ class UserChoice(PaginatedMixin, db.Model):
 
     # If choice is deleted (likely cascaded from deleting a Quiz), set choice_id to null
     choice_id: Mapped[int] = mapped_column(ForeignKey(
-        Choice.id, ondelete='SET NULL'), primary_key=True, index=True, nullable=True)
+        Choice.id, ondelete='CASCADE'), primary_key=True, index=True)
     choice: Mapped[Choice] = relationship(
         'Choice', back_populates='user_choices')
 
@@ -283,7 +267,6 @@ class UserChoice(PaginatedMixin, db.Model):
 
     def to_dict(self):
         return {
-            'id': self.id,
             'attempt_id': self.attempt_id,
             'user_id': self.attempt.user_id,
             'choice': self.choice.to_dict(),
