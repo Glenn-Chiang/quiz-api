@@ -26,12 +26,12 @@ def get_attempt_questions(attempt_id: int):
     return [question.to_dict() for question in AttemptQuestion.query.filter(AttemptQuestion.attempt_id == attempt_id).order_by(AttemptQuestion.sequence_number).all()]
 
 
-# Get all quiz attempts made by given user
+# Get all quiz attempts made by given user, sorted from most recent to least recent
 @app.get('/users/<int:user_id>/attempts')
 def get_user_attempts(user_id: int):
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 20, type=int), 100)
-    return QuizAttempt.to_collection_dict(select(QuizAttempt).where(QuizAttempt.user_id == user_id),
+    return QuizAttempt.to_collection_dict(select(QuizAttempt).where(QuizAttempt.user_id == user_id).order_by(QuizAttempt.timestamp.desc()),
                                           page=page, per_page=per_page,
                                           endpoint='get_user_attempts', user_id=user_id)
 

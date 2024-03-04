@@ -142,7 +142,7 @@ class Question(PaginatedMixin, db.Model):
 class Choice(PaginatedMixin, db.Model):
     __tablename__ = 'choice'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    text: Mapped[str] = mapped_column(String(100))
+    text: Mapped[str] = mapped_column(String(500))
     correct: Mapped[bool] = mapped_column()
 
     # If a Question is deleted, all related Choices should be deleted
